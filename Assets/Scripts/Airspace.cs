@@ -22,4 +22,6 @@ public class Airspace
     public string updatedBy;
     public int activity;
     public HoursOfOperation hoursOfOperation;
+    public Limit lowerLimit;
+    public Limit upperLimit;
 }

@@ -8,7 +8,7 @@ public class Limit
 {
     
     public int value;
-    public int unit;
+    public HeightUnit unit;
     public int referenceDatum;
 
 }
