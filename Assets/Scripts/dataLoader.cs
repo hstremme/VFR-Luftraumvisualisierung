@@ -15,11 +15,8 @@ public class dataLoader : MonoBehaviour
 {
 
     [SerializeField]
-    public Material areodromMaterial;
+    public Material airportMaterial;
     
-    [SerializeField]
-    public XmlDocument areodromSources;
-
     private Transform parent;
 
     private Dictionary<string, List<double[]>> geoidDict = new Dictionary<string, List<double[]>>();
@@ -29,10 +26,28 @@ public class dataLoader : MonoBehaviour
     void Start()
     {
         InitGeoidDict();
+        AddAirports();
+    }
+
+    // Update is called once per frame
+    void Update()
+    {
+
+    }
+
+    void AddAirports()
+    {
+        GameObject airports = new GameObject("Airports");
+        airports.transform.SetParent(this.transform.parent.transform);
+        airports.AddComponent<CesiumSubScene>();
+        airports.GetComponent<CesiumSubScene>().activationRadius = 10000000;
+        airports.GetComponent<CesiumSubScene>().latitude = 51.162408881414336;
+        airports.GetComponent<CesiumSubScene>().longitude = 10.445476086596582;
+
         XmlDocument xmlDoc = new XmlDocument();
         xmlDoc.Load("Assets/Data/ED_AirportHeliport_2023-05-18_2023-05-18_snapshot.xml");
         XmlNodeList xmlList = xmlDoc.GetElementsByTagName("aixm:AirportHeliport");
-        for (int i = 0;  i < xmlList.Count; i++)
+        for (int i = 0; i < xmlList.Count; i++)
         {
             string name = xmlList.Item(i)["aixm:timeSlice"].GetElementsByTagName("aixm:name").Item(0).InnerText;
             string[] pos = xmlList.Item(i)["aixm:timeSlice"].GetElementsByTagName("gml:pos").Item(0).InnerText.Split(' ');
@@ -49,30 +64,22 @@ public class dataLoader : MonoBehaviour
                 height = 50;
             }
             double geoid = GetGeoid(lon, lat);
-            height = height + geoid; 
+            height = height + geoid;
             double3 position = new double3(lat, lon, height);
-            AddAreodromeSprite(position, name);
+            AnchorNewObject(position, name, PrimitiveType.Plane, airportMaterial, airports.transform);
         }
     }
-
-    // Update is called once per frame
-    void Update()
+    
+    private void AnchorNewObject(double3 position, string name, PrimitiveType primitiveType, Material material, Transform parent)
     {
+        GameObject go = GameObject.CreatePrimitive(primitiveType);
+        go.name = name;
+        go.transform.SetParent(parent);
 
-    }
+        go.GetComponent<MeshRenderer>().material = material;
 
-    void AddAreodromeSprite(double3 position, string name)
-    {
-        parent = this.transform.parent.transform;
-
-        GameObject areodromSprite = GameObject.CreatePrimitive(PrimitiveType.Plane);
-        areodromSprite.name = name;
-        areodromSprite.transform.SetParent(parent);
-
-        areodromSprite.GetComponent<MeshRenderer>().material = areodromMaterial;
-
-        areodromSprite.AddComponent<CesiumGlobeAnchor>();
-        CesiumGlobeAnchor anchor = areodromSprite.GetComponent<CesiumGlobeAnchor>();
+        go.AddComponent<CesiumGlobeAnchor>();
+        CesiumGlobeAnchor anchor = go.GetComponent<CesiumGlobeAnchor>();
         anchor.longitudeLatitudeHeight = position;
         anchor.transform.localScale = new Vector3(100, 1000, 100);
     }
