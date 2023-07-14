@@ -4,6 +4,8 @@ using CesiumForUnity;
 using UnityEngine;
 using Unity.Mathematics;
 using UnityEngine.Splines;
+using Unity.VisualScripting;
+using System;
 
 public class routeManager : MonoBehaviour
 {
@@ -17,11 +19,14 @@ public class routeManager : MonoBehaviour
     //todo auf Checkpoint ändern
     private GameObject[] checkpoints;
     private GameObject routeSpline;
-  
+
+    private int flag;
     // Start is called before the first frame update
     void Start()
     {
         
+        flag = 0;
+
         // create CPs
         checkpoints = new GameObject[routeCPs.Length];
         for (int i = 0; i < checkpoints.Length; i++)
@@ -29,15 +34,30 @@ public class routeManager : MonoBehaviour
             checkpoints[i] = AddCheckpoint(routeCPs[i], "cp_" + i);
         }
 
-        // create SplineRoute
-        createSplineGameObject();
+       
+        Debug.Log("[Start]Cp Coords: " + routeCPs[0]);
+        Debug.Log(convertCoordsToUnitySpace(routeCPs[0]));
 
     }
 
     // Update is called once per frame
     void Update()
     {
-        
+        if (flag == 1) 
+        {
+            afterCesiumAnchorSetup();
+            flag += 1;
+
+        } else if (flag == 0) 
+        {
+            flag += 1;
+        }
+    }
+
+    void afterCesiumAnchorSetup()
+    {
+        // create SplineRoute
+        createSplineGameObject();
     }
 
     GameObject AddCheckpoint(double3 position, string name)
@@ -76,8 +96,8 @@ public class routeManager : MonoBehaviour
         var spline = routeSpline.GetComponent<SplineContainer>().Spline;
 
         // get realativ positions
-        //float3[] relativPositions = getRelativPositionsIncludingTheEarthCurbing(routeCPs[0], routeCPs);
-        float3[] relativPositions = getRelativPositionsBetweenCheckpoints(checkpoints[0], checkpoints);
+        float3[] relativPositions = getRelativPositionsIncludingTheEarthCurbing(routeCPs[0], routeCPs);
+        //float3[] relativPositions = getRelativPositionsBetweenCheckpoints(checkpoints[0], checkpoints);
 
         // create knots
         BezierKnot[] cpKnots = new BezierKnot[relativPositions.Length];
@@ -99,16 +119,21 @@ public class routeManager : MonoBehaviour
         CesiumGeoreference cesiumGeoreference = GetComponentInParent<CesiumGeoreference>();
         float3[] relativPositions = new float3[coords.Length];
 
-        for (int i = 1; i < coords.Length; i++)
+        // Unity coordinates of origin
+        double3 originEarthCenteredPosition = CesiumWgs84Ellipsoid.LongitudeLatitudeHeightToEarthCenteredEarthFixed(coords[0]);
+        double3 unityOriginPosition = cesiumGeoreference.TransformEarthCenteredEarthFixedPositionToUnity(originEarthCenteredPosition);
+
+        for (int i = 0; i < coords.Length; i++)
         {
             // get realtiv position
-            double3 relativCoords = coords[i] - origin;
+            //double3 relativCoords = coords[i] - origin;
 
             // convert 
-            double3 earthCenteredPosition = CesiumWgs84Ellipsoid.LongitudeLatitudeHeightToEarthCenteredEarthFixed(relativCoords);
+            double3 earthCenteredPosition = CesiumWgs84Ellipsoid.LongitudeLatitudeHeightToEarthCenteredEarthFixed(coords[i]);
             double3 unityPosition = cesiumGeoreference.TransformEarthCenteredEarthFixedPositionToUnity(earthCenteredPosition);
 
-            relativPositions[i] = convertDouble3tofloat3(unityPosition);
+            relativPositions[i] = convertDouble3tofloat3(unityPosition - unityOriginPosition);
+            relativPositions[i].y = 0;
         }
 
         return relativPositions;
@@ -121,16 +146,21 @@ public class routeManager : MonoBehaviour
         {
             // get realtiv position
             relativPositions[i] = coords[i].transform.position - origin.transform.position;
-            relativPositions[i].y *= -0.4f;
-
+            relativPositions[i].y = 0f;
         }
 
         return relativPositions;
     }
-
     float3 convertDouble3tofloat3(double3 vector)
     {
         return new float3((float)vector.x, (float)vector.y, (float)vector.z);
+    }
+
+    double3 convertCoordsToUnitySpace(double3 coords)
+    {
+        CesiumGeoreference cesiumGeoreference = GetComponentInParent<CesiumGeoreference>();
+        double3 earthCenteredPosition = CesiumWgs84Ellipsoid.LongitudeLatitudeHeightToEarthCenteredEarthFixed(coords);
+        return cesiumGeoreference.TransformEarthCenteredEarthFixedPositionToUnity(earthCenteredPosition);
     }
 }
 
