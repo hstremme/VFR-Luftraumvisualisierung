@@ -443,6 +443,9 @@ MonoBehaviour:
   - x: 9.76273
     y: 52.355588
     z: 1200
+  - x: 9.74
+    y: 52.3
+    z: 0
   checkpointPrefab: {fileID: 2981331434148691350, guid: e11c68c6dd35de642a819d64d2a07342,
     type: 3}
   splineRoutePrefab: {fileID: 3369819474008053824, guid: 32b9c542b1db3cf4692bca99ceac910b,
@@ -453,6 +456,7 @@ MonoBehaviour:
   - 0
   - -263.3812
   - -2515.076
+  - -3715.076
 --- !u!114 &621590190
 MonoBehaviour:
   m_ObjectHideFlags: 0
