@@ -96,38 +96,8 @@ public class DataLoaderJson : MonoBehaviour
             }
             vertices[topIndex] = new Vector3(vertices[i].x, upperLimit, vertices[i].z);
 
-            // normals[i] = Vector3.up;
-            // normals[topIndex] = Vector3.up;
-
-            // if(i >= 2) {
-            //     if(tris.Count >= 3) {
-            //         // int oldTriangleIndexV3 = tris[tris.Count - 1];
-            //         // int oldTriangleIndexV2 = tris[tris.Count - 2];
-            //         // int oldTriangleIndexV1 = tris[tris.Count - 3];
-            //         // Triangle before = new Triangle(vertices[oldTriangleIndexV1], vertices[oldTriangleIndexV2], vertices[oldTriangleIndexV3], oldTriangleIndexV1, oldTriangleIndexV2, oldTriangleIndexV3);
-            //         // Triangle newTri = new Triangle(vertices[i - 1], vertices[i - 2], vertices[0], i, i - 1, 0);
-
-            //         Vector3 pos1 = vertices[i];
-            //         Vector3 pos2 = vertices[i - 1];
-            //         Vector3 pos3 = vertices[0];
-
-            //         if((pos1.x < pos2.x && pos3.x > pos2.x && ((pos1.z > pos2.z && pos3.z < pos2.z) || (pos1.z < pos2.z && pos3.z > pos2.z)))
-            //         || (pos1.z < pos2.z && pos3.z > pos2.z && ((pos1.x > pos2.x && pos3.x < pos2.x) || (pos1.x < pos2.x && pos3.x > pos2.x)))
-            //         || (pos1.z == pos2.z && pos2.z == pos3.z && ((pos1.x > pos2.x && pos3.x < pos2.x) || (pos3.x > pos2.x && pos1.x < pos2.x)))
-            //         || (pos1.x == pos2.x && pos2.x == pos3.x && ((pos1.z > pos2.z && pos3.z < pos2.z) || (pos3.z > pos2.z && pos1.z < pos2.z)))) {
-            //             continue;
-            //         }
-
-            //         // Intersection intersectionOfNewTriWithTriBefore = newTri.IntersectionWithTriangle(before);
-            //         // if(intersectionOfNewTriWithTriBefore != null) {
-                        
-            //         // }
-            //     }
-
-            //     tris.Add(i-1);
-            //     tris.Add(i);
-            //     tris.Add(0);
-            // }
+            normals[i] = Vector3.up;
+            normals[topIndex] = Vector3.up;
         }
         Triangulator triangulator = new Triangulator(vertices2D);
         tris = triangulator.Triangulate();
@@ -137,15 +107,6 @@ public class DataLoaderJson : MonoBehaviour
         for(int i = 0; i < trisPerArea; i++) {
             tris.Add(tris[i] + positions.Length);
         }
-
-        // for(int i = positions.Length; i < positions.Length * 2; i++) {
-
-        //     if(i >= positions.Length + 2) {
-        //         tris.Add(i-1);
-        //         tris.Add(i);
-        //         tris.Add(positions.Length + 1);
-        //     }
-        // }
 
         // Triangles for the geometry's sides
         for(int i = positions.Length; i < positions.Length * 2; i++) {
@@ -169,52 +130,6 @@ public class DataLoaderJson : MonoBehaviour
             tris.Add(i);
             tris.Add(i - positions.Length);
         }
-
-        // for(int i = 0; i < tris.Count - 3; i += 3) {
-
-        //     int tri1VertexIndex1 = tris[i];
-        //     int tri1VertexIndex2 = tris[i + 1];
-        //     int tri1VertexIndex3 = tris[i + 2];
-
-        //     if(tri1VertexIndex1 == -1) {
-        //         continue;
-        //     }
-
-        //     Vector3 tri1pos1 = vertices[tri1VertexIndex1];
-        //     Vector3 tri1pos2 = vertices[tri1VertexIndex2];
-        //     Vector3 tri1pos3 = vertices[tri1VertexIndex3];
-        //     Triangle tri1 = new Triangle(vertices[tri1VertexIndex1], vertices[tri1VertexIndex2], vertices[tri1VertexIndex3], tri1VertexIndex1, tri1VertexIndex2, tri1VertexIndex3); 
-        //     for(int j = i + 3; j < tris.Count - 3; j += 3) {
-
-        //         if(tri1VertexIndex1 < positions.Length && tris[j] >= positions.Length) {
-        //             break;
-        //         }
-
-        //         int tri2VertexIndex1 = tris[j];
-        //         int tri2VertexIndex2 = tris[j + 1];
-        //         int tri2VertexIndex3 = tris[j + 2];
-
-        //         if(tri2VertexIndex1 == -1) {
-        //             continue;
-        //         }
-
-        //         Triangle tri2 = new Triangle(vertices[tri2VertexIndex1], vertices[tri2VertexIndex2], vertices[tri2VertexIndex3], tri2VertexIndex1, tri2VertexIndex2, tri2VertexIndex3); 
-
-        //         Intersection intersection = tri1.IntersectionWithTriangle(tri2);
-        //         if(intersection != null) {
-        //             if(intersection.type == IntersectionType.POINT_INTERSECTS_WITH_AREA) {
-        //                 Debug.Log("Passiert das?");
-        //                 // tris[j] = -1;
-        //                 // tris[j + 1] = -1;
-        //                 // tris[j + 2] = -1;
-        //             }
-                    
-        //         }
-        //     }
-        // }
-
-        // tris.RemoveAll(x => x == -1);
-
 
         GameObject gObject = new GameObject(airspace.name);
         if(this.transform.parent != null) {
