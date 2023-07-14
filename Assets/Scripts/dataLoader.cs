@@ -16,13 +16,13 @@ public class dataLoader : MonoBehaviour
 
     [SerializeField]
     public Material airportMaterial;
-    
-    private Transform parent;
 
+    [SerializeField]
+    public Material helipadMaterial;
+    
     private Dictionary<string, List<double[]>> geoidDict = new Dictionary<string, List<double[]>>();
 
     // Start is called before the first frame update
-    // TODO global variable für zusätzliche höhe
     void Start()
     {
         InitGeoidDict();
@@ -44,19 +44,29 @@ public class dataLoader : MonoBehaviour
         airports.GetComponent<CesiumSubScene>().latitude = 51.162408881414336;
         airports.GetComponent<CesiumSubScene>().longitude = 10.445476086596582;
 
-        XmlDocument xmlDoc = new XmlDocument();
-        xmlDoc.Load("Assets/Data/ED_AirportHeliport_2023-05-18_2023-05-18_snapshot.xml");
-        XmlNodeList xmlList = xmlDoc.GetElementsByTagName("aixm:AirportHeliport");
-        for (int i = 0; i < xmlList.Count; i++)
+        XmlDocument airportXml = new XmlDocument();
+        XmlDocument runwayXml = new XmlDocument();
+        airportXml.Load("Assets/Data/ED_AirportHeliport_2023-05-18_2023-05-18_snapshot.xml");
+        runwayXml.Load("Assets/Data/ED_Runway_2023-07-13_2023-07-13_snapshot.xml");
+        XmlNamespaceManager nsmgr = new XmlNamespaceManager(runwayXml.NameTable);
+        //var nameTable = runwayXml.NameTable;
+        XmlNodeList airportList = airportXml.GetElementsByTagName("aixm:AirportHeliport");
+        for (int i = 0; i < airportList.Count; i++)
         {
-            string name = xmlList.Item(i)["aixm:timeSlice"].GetElementsByTagName("aixm:name").Item(0).InnerText;
-            string[] pos = xmlList.Item(i)["aixm:timeSlice"].GetElementsByTagName("gml:pos").Item(0).InnerText.Split(' ');
+            var xmlPart = airportList.Item(i)["aixm:timeSlice"];
+            string name = xmlPart.GetElementsByTagName("aixm:name").Item(0).InnerText;
+            string[] pos = xmlPart.GetElementsByTagName("gml:pos").Item(0).InnerText.Split(' ');
+            string type = xmlPart.GetElementsByTagName("aixm:type").Item(0).InnerText;
+            string icao = xmlPart.GetElementsByTagName("aixm:locationIndicatorICAO").Item(0).InnerText;
+            Debug.Log(name + ": " + icao);
+            XmlElement runway = runwayXml.DocumentElement;
+            //var node = runway.SelectSingleNode("//aixm:associatedAirportHeliport[@xlink:title='EDQI']", nsmgr);
             double lon = double.Parse(pos[0], CultureInfo.InvariantCulture);
             double lat = double.Parse(pos[1], CultureInfo.InvariantCulture);
             double height = 0;
             try
             {
-                height = double.Parse(xmlList.Item(i)["aixm:timeSlice"].GetElementsByTagName("aixm:elevation").Item(0).InnerText, CultureInfo.InvariantCulture);
+                height = double.Parse(airportList.Item(i)["aixm:timeSlice"].GetElementsByTagName("aixm:elevation").Item(0).InnerText, CultureInfo.InvariantCulture);
                 height = height * 0.3048;
             }
             catch
@@ -66,7 +76,14 @@ public class dataLoader : MonoBehaviour
             double geoid = GetGeoid(lon, lat);
             height = height + geoid;
             double3 position = new double3(lat, lon, height);
-            AnchorNewObject(position, name, PrimitiveType.Plane, airportMaterial, airports.transform);
+            if (type.Equals("HP"))
+            {
+                AnchorNewObject(position, name, PrimitiveType.Plane, helipadMaterial, airports.transform);
+            }
+            else
+            {
+                AnchorNewObject(position, name, PrimitiveType.Plane, airportMaterial, airports.transform);
+            }
         }
     }
     

@@ -921,4 +921,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0dcc97c21f8a2e044afeae115cc9fbdb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  airportMaterial: {fileID: 2100000, guid: bd02ef4dc4c7792409183561786c26f8, type: 2}
+  airportMaterial: {fileID: 2100000, guid: ccae375cbdd7bc142a617b96542bfffa, type: 2}
+  helipadMaterial: {fileID: 2100000, guid: d3690298684d41443846c3d43cff93b6, type: 2}
