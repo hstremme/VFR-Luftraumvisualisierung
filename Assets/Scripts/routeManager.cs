@@ -109,6 +109,7 @@ public class routeManager : MonoBehaviour
 
         // set knots to spline
         spline.Knots = cpKnots;
+        routeSpline.transform.rotation = Quaternion.identity;
     }
 
     /*
@@ -133,8 +134,9 @@ public class routeManager : MonoBehaviour
             double3 earthCenteredPosition = CesiumWgs84Ellipsoid.LongitudeLatitudeHeightToEarthCenteredEarthFixed(coords[i]);
             double3 unityPosition = cesiumGeoreference.TransformEarthCenteredEarthFixedPositionToUnity(earthCenteredPosition);
 
-            relativPositions[i] = convertDouble3tofloat3(unityPosition - unityOriginPosition);
-            relativPositions[i].y = fixedCPRouteHeight[i];
+            // relativPositions[i] = convertDouble3tofloat3(unityPosition - unityOriginPosition);
+            // relativPositions[i].y = fixedCPRouteHeight[i];
+            relativPositions[i] = checkpoints[i].transform.position - checkpoints[0].transform.position;
         }
 
         return relativPositions;
