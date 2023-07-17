@@ -13,9 +13,7 @@ public class routeManager : MonoBehaviour
 
     public double3[] routeCPs;
     public GameObject checkpointPrefab;
-    public GameObject splineRoutePrefab;
-    public float[] fixedCPRouteHeight;
-    
+    public GameObject splineRoutePrefab;    
 
     //todo auf Checkpoint ändern
     private GameObject[] checkpoints;
@@ -134,8 +132,6 @@ public class routeManager : MonoBehaviour
             double3 earthCenteredPosition = CesiumWgs84Ellipsoid.LongitudeLatitudeHeightToEarthCenteredEarthFixed(coords[i]);
             double3 unityPosition = cesiumGeoreference.TransformEarthCenteredEarthFixedPositionToUnity(earthCenteredPosition);
 
-            // relativPositions[i] = convertDouble3tofloat3(unityPosition - unityOriginPosition);
-            // relativPositions[i].y = fixedCPRouteHeight[i];
             relativPositions[i] = checkpoints[i].transform.position - checkpoints[0].transform.position;
         }
 
