@@ -11,45 +11,65 @@ public class routeManager : MonoBehaviour
 {
     private Transform parent;
 
-    public double3[] routeCPs;
+    public double3[] inputRouteCPs;
     public GameObject checkpointPrefab;
-    public GameObject splineRoutePrefab;    
+    public GameObject splineRoutePrefab;
 
-    //todo auf Checkpoint ändern
     private GameObject[] checkpoints;
     private GameObject routeSpline;
+    public GameObject activeCP;
 
     private int flag;
     // Start is called before the first frame update
     void Start()
     {
-        
+
         flag = 0;
 
         // create CPs
-        checkpoints = new GameObject[routeCPs.Length];
+        checkpoints = new GameObject[inputRouteCPs.Length];
         for (int i = 0; i < checkpoints.Length; i++)
         {
-            checkpoints[i] = AddCheckpoint(routeCPs[i], "cp_" + i);
+            checkpoints[i] = AddCheckpoint(inputRouteCPs[i], "cp_" + i);
         }
 
-       
-        Debug.Log("[Start]Cp Coords: " + routeCPs[0]);
-        Debug.Log(convertCoordsToUnitySpace(routeCPs[0]));
-
+        // set first active cp
+        activeCP = checkpoints[0];
+        activeCP.GetComponent<SetupCP>().setCPMaterialStatus(true);
     }
 
     // Update is called once per frame
     void Update()
     {
-        if (flag == 1) 
+        if (flag == 1)
         {
             afterCesiumAnchorSetup();
             flag += 1;
 
-        } else if (flag == 0) 
+        }
+        else if (flag == 0)
         {
             flag += 1;
+        }
+
+        if (Input.GetKeyDown(KeyCode.KeypadPlus))
+        {
+            changeToNextCP(true);
+        }
+
+        if (Input.GetKeyDown(KeyCode.KeypadMinus))
+        {
+            changeToNextCP(false);
+        }
+
+        if (Input.GetKeyDown(KeyCode.U))
+        {
+            adjustCPHeight( 100);
+        }
+
+        if (Input.GetKeyDown(KeyCode.I))
+        {
+            adjustCPHeight( -100);
         }
     }
 
@@ -57,6 +77,7 @@ public class routeManager : MonoBehaviour
     {
         // create SplineRoute
         createSplineGameObject();
+
     }
 
     GameObject AddCheckpoint(double3 position, string name)
@@ -88,79 +109,81 @@ public class routeManager : MonoBehaviour
         // position spline object
         CesiumGlobeAnchor anchor = routeSpline.GetComponent<CesiumGlobeAnchor>();
         // using the position of the first cp as origin
-        anchor.longitudeLatitudeHeight = routeCPs[0];
+        anchor.longitudeLatitudeHeight = inputRouteCPs[0];
         anchor.transform.localScale = new Vector3(1, 1, 1);
 
-        // get spline component
+        updateSpline();
+    }
+
+    void updateSpline()
+    {
+        // get all Knots of the spline
         var spline = routeSpline.GetComponent<SplineContainer>().Spline;
-
-        // get realativ positions
-        float3[] relativPositions = getRelativPositionsIncludingTheEarthCurbing(routeCPs[0], routeCPs);
-        //float3[] relativPositions = getRelativPositionsBetweenCheckpoints(checkpoints[0], checkpoints);
-
-        // create knots
-        BezierKnot[] cpKnots = new BezierKnot[relativPositions.Length];
-        for (int i = 1; i < routeCPs.Length; i++)
-        {
-            cpKnots[i] = new BezierKnot(relativPositions[i]);
-        }
+        BezierKnot[] cpKnots = getRelativKnotPositionsOfCheckpoints();
 
         // set knots to spline
         spline.Knots = cpKnots;
         routeSpline.transform.rotation = Quaternion.identity;
+        routeSpline.GetComponent<SplineExtrude>().Rebuild();
     }
 
     /*
-     * This methods returns the realativ positions including the earth curbin, between one origin and an array of coordinates.
+     * This methods returns the realativ positions between the first and all other cps
      */
-    float3[] getRelativPositionsIncludingTheEarthCurbing(double3 origin, double3[] coords)
+    BezierKnot[] getRelativKnotPositionsOfCheckpoints()
     {
+        BezierKnot[] relativPositions = new BezierKnot[checkpoints.Length];
 
-        CesiumGeoreference cesiumGeoreference = GetComponentInParent<CesiumGeoreference>();
-        float3[] relativPositions = new float3[coords.Length];
 
-        // Unity coordinates of origin
-        double3 originEarthCenteredPosition = CesiumWgs84Ellipsoid.LongitudeLatitudeHeightToEarthCenteredEarthFixed(coords[0]);
-        double3 unityOriginPosition = cesiumGeoreference.TransformEarthCenteredEarthFixedPositionToUnity(originEarthCenteredPosition);
-
-        for (int i = 0; i < coords.Length; i++)
+        for (int i = 0; i < checkpoints.Length; i++)
         {
             // get realtiv position
-            //double3 relativCoords = coords[i] - origin;
-
-            // convert 
-            double3 earthCenteredPosition = CesiumWgs84Ellipsoid.LongitudeLatitudeHeightToEarthCenteredEarthFixed(coords[i]);
-            double3 unityPosition = cesiumGeoreference.TransformEarthCenteredEarthFixedPositionToUnity(earthCenteredPosition);
-
-            relativPositions[i] = checkpoints[i].transform.position - checkpoints[0].transform.position;
+            relativPositions[i] = new BezierKnot(checkpoints[i].transform.position - checkpoints[0].transform.position);
         }
 
         return relativPositions;
     }
 
-    float3[] getRelativPositionsBetweenCheckpoints(GameObject origin, GameObject[] coords) 
+    void setAsActiveCP(GameObject cp)
     {
-        float3[] relativPositions = new float3[coords.Length];
-        for (int i = 1; i < coords.Length; i++)
+        // reset material of old cp
+        activeCP.GetComponent<SetupCP>().setCPMaterialStatus(false);
+
+        // set new active cp
+        activeCP = cp;
+        activeCP.GetComponent<SetupCP>().setCPMaterialStatus(true);
+    }
+
+    void changeToNextCP(bool increment)
+    {
+        // get Index of next ActiveCP
+        int i = Array.IndexOf(checkpoints, activeCP);
+        if (increment)
         {
-            // get realtiv position
-            relativPositions[i] = coords[i].transform.position - origin.transform.position;
-            relativPositions[i].y = 0f;
+            i += 1;
+        }
+        else
+        {
+            i -= 1;
         }
 
-        return relativPositions;
-    }
-    float3 convertDouble3tofloat3(double3 vector)
-    {
-        return new float3((float)vector.x, (float)vector.y, (float)vector.z);
+        i = Math.Clamp(i, 0, checkpoints.Length - 1);
+        setAsActiveCP(checkpoints[i]);
     }
 
-    double3 convertCoordsToUnitySpace(double3 coords)
+    void adjustCPHeight(int interval)
     {
-        CesiumGeoreference cesiumGeoreference = GetComponentInParent<CesiumGeoreference>();
-        double3 earthCenteredPosition = CesiumWgs84Ellipsoid.LongitudeLatitudeHeightToEarthCenteredEarthFixed(coords);
-        return cesiumGeoreference.TransformEarthCenteredEarthFixedPositionToUnity(earthCenteredPosition);
+        // get new Position
+        double3 position = activeCP.GetComponent<CesiumGlobeAnchor>().longitudeLatitudeHeight;
+        position[2] += interval;
+
+        // set new Position
+        activeCP.GetComponent<CesiumGlobeAnchor>().longitudeLatitudeHeight = position;
+
+        // update spline
+        updateSpline();
     }
+
 }
 
 
