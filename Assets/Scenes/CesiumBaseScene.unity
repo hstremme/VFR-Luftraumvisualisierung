@@ -430,7 +430,7 @@ MonoBehaviour:
   routeCPs:
   - x: 10.68703
     y: 53.86879
-    z: 1200
+    z: 0
   - x: 10.59528
     y: 53.85085
     z: 1200
@@ -439,7 +439,7 @@ MonoBehaviour:
     z: 1200
   - x: 10.025
     y: 53.561
-    z: 1200
+    z: 2000
   - x: 9.76273
     y: 52.355588
     z: 1200
@@ -450,13 +450,6 @@ MonoBehaviour:
     type: 3}
   splineRoutePrefab: {fileID: 3369819474008053824, guid: 32b9c542b1db3cf4692bca99ceac910b,
     type: 3}
-  fixedCPRouteHeight:
-  - 0
-  - 0
-  - 0
-  - -263.3812
-  - -2515.076
-  - -3715.076
 --- !u!114 &621590190
 MonoBehaviour:
   m_ObjectHideFlags: 0

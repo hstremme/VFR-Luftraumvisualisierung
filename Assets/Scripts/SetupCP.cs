@@ -1,12 +1,13 @@
 using System.Collections;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public class SetupCP : MonoBehaviour
 {
     private Transform parent;
-    public float radius = 50f;
-    public float height = 100f;
+    public float cpHeight = 1200;
+    public Material cpPositonMarker;
 
     // Start is called before the first frame update
     void Start()
@@ -14,13 +15,15 @@ public class SetupCP : MonoBehaviour
         parent = this.transform;
 
         GameObject cylinder = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
-        cylinder.transform.SetParent(parent);
-        cylinder.name = "cp_location_marker";
-        cylinder.transform.position = new Vector3(0f,0f,0f);
-        cylinder.transform.localScale = new Vector3(radius * 2f, height, radius * 2f);
+        cylinder.transform.SetParent(parent, false);
+        cylinder.name = this.name + "_location_marker";
+        cylinder.transform.localScale = new Vector3(0.3f, 0.002f*cpHeight, 0.3f);
+        cylinder.transform.Translate(new Vector3(0, -cpHeight, 0));
+        cylinder.GetComponent<Renderer>().material = cpPositonMarker;
     }
 
     // Update is called once per frame
+  
     void Update()
     {
         
