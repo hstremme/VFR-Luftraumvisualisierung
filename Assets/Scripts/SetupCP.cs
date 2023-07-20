@@ -25,7 +25,7 @@ public class SetupCP : MonoBehaviour
         cylinder.name = this.name + "_location_marker";
         cylinder.transform.localScale = new Vector3(0.3f, 0.002f*cpHeight, 0.3f);
         cylinder.transform.Translate(new Vector3(0, -cpHeight, 0));
-        cylinder.GetComponent<Renderer>().material = cpPositonMarker;       
+        cylinder.GetComponent<Renderer>().material = cpPositonMarker;
     }
 
     // Update is called once per frame

@@ -14,9 +14,19 @@ public class routeManager : MonoBehaviour
     public double3[] inputRouteCPs;
     public GameObject checkpointPrefab;
     public GameObject splineRoutePrefab;
+    public GameObject miniMapSplineRoutePrefab;
+
+    // Geoid
+    public GameObject dataLoader;
+    private Geoid Geoid;
+
+    //miniMap
+    public GameObject miniMapGeoRef;
 
     private GameObject[] checkpoints;
+    private GameObject[] miniMapCps;
     private GameObject routeSpline;
+    private GameObject miniMapRouteSpline;
     public GameObject activeCP;
 
     private int flag;
@@ -24,13 +34,18 @@ public class routeManager : MonoBehaviour
     void Start()
     {
 
+        // get geoid script refrenz
+        Geoid = dataLoader.GetComponent<Geoid>();
+
         flag = 0;
 
         // create CPs
         checkpoints = new GameObject[inputRouteCPs.Length];
+        miniMapCps = new GameObject[inputRouteCPs.Length];
+
         for (int i = 0; i < checkpoints.Length; i++)
         {
-            checkpoints[i] = AddCheckpoint(inputRouteCPs[i], "cp_" + i);
+            (checkpoints[i], miniMapCps[i]) = AddCheckpoint(inputRouteCPs[i], "cp_" + i);
         }
 
         // set first active cp
@@ -75,70 +90,88 @@ public class routeManager : MonoBehaviour
 
     void afterCesiumAnchorSetup()
     {
-        // create SplineRoute
-        createSplineGameObject();
+        // create SplineRoutes
+        routeSpline = createSplineGameObject( this.transform.parent.transform, checkpoints, "routeSpline", splineRoutePrefab, 20);
+        miniMapRouteSpline = createSplineGameObject( miniMapGeoRef.transform, miniMapCps, "miniMapRouteSpline", miniMapSplineRoutePrefab, 200);
+        miniMapRouteSpline.layer = LayerMask.NameToLayer("miniMap");
 
     }
 
-    GameObject AddCheckpoint(double3 position, string name)
+    (GameObject world, GameObject minimap) AddCheckpoint(double3 position, string name)
     {
         parent = this.transform.parent.transform;
 
+        // add Cp to 3D map
         GameObject checkpoint = Instantiate(checkpointPrefab);
         checkpoint.name = name;
         checkpoint.transform.SetParent(parent);
 
+        // add geoid to height
+        double geoid = Geoid.GetGeoid(position[1], position[0]);
+        position[2] = position[2] + geoid ;
+
         CesiumGlobeAnchor anchor = checkpoint.GetComponent<CesiumGlobeAnchor>();
         anchor.longitudeLatitudeHeight = position;
-        //anchor.transform.localScale = new Vector3(400, 400, 400);
 
-        return checkpoint;
+        // add cp to 3D map
+        GameObject miniMapCheckpoint = Instantiate(checkpointPrefab);
+        miniMapCheckpoint.name = "mM_"+name;
+        miniMapCheckpoint.transform.SetParent(miniMapGeoRef.transform);
+        CesiumGlobeAnchor miniMapAnchor = miniMapCheckpoint.GetComponent<CesiumGlobeAnchor>();
+        miniMapAnchor.longitudeLatitudeHeight = position;
+        miniMapAnchor.transform.localScale = new Vector3(10000,100,10000);
+        miniMapCheckpoint.layer = LayerMask.NameToLayer("miniMap");
+
+
+        return (checkpoint, miniMapCheckpoint);
     }
 
 
 
-    void createSplineGameObject()
+    GameObject createSplineGameObject(Transform parent, GameObject[] cps, String name, GameObject Prefab, int radius)
     {
-        parent = this.transform.parent.transform;
+        //parent = this.transform.parent.transform;
 
         // create spline from prefab
-        routeSpline = Instantiate(splineRoutePrefab);
-        routeSpline.name = "routeSpline";
-        routeSpline.transform.SetParent(parent);
+        GameObject splineObject = Instantiate(Prefab);
+        splineObject.name = name;
+        splineObject.transform.SetParent(parent);
 
         // position spline object
-        CesiumGlobeAnchor anchor = routeSpline.GetComponent<CesiumGlobeAnchor>();
+        CesiumGlobeAnchor anchor = splineObject.GetComponent<CesiumGlobeAnchor>();
         // using the position of the first cp as origin
         anchor.longitudeLatitudeHeight = inputRouteCPs[0];
         anchor.transform.localScale = new Vector3(1, 1, 1);
 
-        updateSpline();
+        updateSpline(splineObject, cps, radius);
+        return splineObject;
     }
 
-    void updateSpline()
+    void updateSpline(GameObject splineObject, GameObject[] cps, int radius)
     {
         // get all Knots of the spline
-        var spline = routeSpline.GetComponent<SplineContainer>().Spline;
-        BezierKnot[] cpKnots = getRelativKnotPositionsOfCheckpoints();
+        var spline = splineObject.GetComponent<SplineContainer>().Spline;
+        BezierKnot[] cpKnots = getRelativKnotPositionsOfCheckpoints(cps);
 
         // set knots to spline
         spline.Knots = cpKnots;
-        routeSpline.transform.rotation = Quaternion.identity;
-        routeSpline.GetComponent<SplineExtrude>().Rebuild();
+        splineObject.transform.rotation = Quaternion.identity;
+        splineObject.GetComponent<SplineExtrude>().Radius = radius;
+        splineObject.GetComponent<SplineExtrude>().Rebuild();
     }
 
     /*
      * This methods returns the realativ positions between the first and all other cps
      */
-    BezierKnot[] getRelativKnotPositionsOfCheckpoints()
+    BezierKnot[] getRelativKnotPositionsOfCheckpoints(GameObject[] cps)
     {
-        BezierKnot[] relativPositions = new BezierKnot[checkpoints.Length];
+        BezierKnot[] relativPositions = new BezierKnot[cps.Length];
 
 
-        for (int i = 0; i < checkpoints.Length; i++)
+        for (int i = 0; i < cps.Length; i++)
         {
             // get realtiv position
-            relativPositions[i] = new BezierKnot(checkpoints[i].transform.position - checkpoints[0].transform.position);
+            relativPositions[i] = new BezierKnot(cps[i].transform.position - cps[0].transform.position);
         }
 
         return relativPositions;
@@ -181,7 +214,7 @@ public class routeManager : MonoBehaviour
         activeCP.GetComponent<CesiumGlobeAnchor>().longitudeLatitudeHeight = position;
 
         // update spline
-        updateSpline();
+        updateSpline(routeSpline, checkpoints, 80);
     }
 
 }
