@@ -9,9 +9,10 @@ TagManager:
   - TransparentFX
   - Ignore Raycast
   - miniMap
+  - World Terrain
   - Water
   - UI
-  - 
+  - Georeference
   - 
   - 
   - 
