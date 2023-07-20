@@ -13,81 +13,150 @@ using System.Linq;
 
 public class dataLoader : MonoBehaviour
 {
+    public GameObject dynamicCamera;
 
-    [SerializeField]
     public Material airportMaterial;
 
-    [SerializeField]
     public Material helipadMaterial;
+
+    public Material obstaclePrefab;
     
-    private Dictionary<string, List<double[]>> geoidDict = new Dictionary<string, List<double[]>>();
+    private Geoid geoid;
+
+    private List<GameObject> airportsList = new List<GameObject>();
+
+    private GameObject container;
+
+    private double lastCamHeight = 0;
 
     // Start is called before the first frame update
     void Start()
     {
-        InitGeoidDict();
+        geoid = this.GetComponentInParent<Geoid>();
+
+        container = new GameObject("AirportsContainer");
+        container.transform.SetParent(this.transform.parent.transform);
+        container.AddComponent<CesiumSubScene>();
+        container.GetComponent<CesiumSubScene>().activationRadius = 10000000;
+        container.GetComponent<CesiumSubScene>().latitude = 51.162408881414336;
+        container.GetComponent<CesiumSubScene>().longitude = 10.445476086596582;
+
         AddAirports();
+        AddObstacles();
     }
 
     // Update is called once per frame
     void Update()
     {
-
+        double camHeight = dynamicCamera.GetComponent<CesiumGlobeAnchor>().longitudeLatitudeHeight.z;
+        //if (lastCamHeight != camHeight)
+        //{
+        //    Debug.Log("Height Changed");
+        //    lastCamHeight = camHeight;
+        //    if (lastCamHeight < 100000 && lastCamHeight > 700)
+        //    {
+        //        foreach(var airport in airportsList)
+        //        {
+        //            airport.GetComponent<CesiumGlobeAnchor>().scaleEastUpNorth = camHeight / 100;
+        //        }
+        //    }
+        //} 
     }
 
+    /*
+     * Adds all Airports and Heliport from the XML to the Scene
+     */
     void AddAirports()
     {
-        GameObject airports = new GameObject("Airports");
-        airports.transform.SetParent(this.transform.parent.transform);
-        airports.AddComponent<CesiumSubScene>();
-        airports.GetComponent<CesiumSubScene>().activationRadius = 10000000;
-        airports.GetComponent<CesiumSubScene>().latitude = 51.162408881414336;
-        airports.GetComponent<CesiumSubScene>().longitude = 10.445476086596582;
-
         XmlDocument airportXml = new XmlDocument();
-        XmlDocument runwayXml = new XmlDocument();
         airportXml.Load("Assets/Data/ED_AirportHeliport_2023-05-18_2023-05-18_snapshot.xml");
+        XmlDocument runwayXml = new XmlDocument();
         runwayXml.Load("Assets/Data/ED_Runway_2023-07-13_2023-07-13_snapshot.xml");
-        XmlNamespaceManager nsmgr = new XmlNamespaceManager(runwayXml.NameTable);
-        //var nameTable = runwayXml.NameTable;
-        XmlNodeList airportList = airportXml.GetElementsByTagName("aixm:AirportHeliport");
-        for (int i = 0; i < airportList.Count; i++)
+        XmlNamespaceManager nsmgr = CreateXmlNsmng(runwayXml);
+
+        XmlNodeList airportXmlList = airportXml.GetElementsByTagName("aixm:AirportHeliport");
+        for (int i = 0; i < airportXmlList.Count; i++)
         {
-            var xmlPart = airportList.Item(i)["aixm:timeSlice"];
+            var xmlPart = airportXmlList.Item(i)["aixm:timeSlice"];
             string name = xmlPart.GetElementsByTagName("aixm:name").Item(0).InnerText;
             string[] pos = xmlPart.GetElementsByTagName("gml:pos").Item(0).InnerText.Split(' ');
             string type = xmlPart.GetElementsByTagName("aixm:type").Item(0).InnerText;
             string icao = xmlPart.GetElementsByTagName("aixm:locationIndicatorICAO").Item(0).InnerText;
-            Debug.Log(name + ": " + icao);
-            XmlElement runway = runwayXml.DocumentElement;
-            //var node = runway.SelectSingleNode("//aixm:associatedAirportHeliport[@xlink:title='EDQI']", nsmgr);
             double lon = double.Parse(pos[0], CultureInfo.InvariantCulture);
             double lat = double.Parse(pos[1], CultureInfo.InvariantCulture);
-            double height = 0;
-            try
+            // Set default height to 50 meters
+            double height = 50;
+            string strHeight = airportXmlList.Item(i)["aixm:timeSlice"].GetElementsByTagName("aixm:elevation").Item(0).InnerText;
+            if (!strHeight.Equals(""))
             {
-                height = double.Parse(airportList.Item(i)["aixm:timeSlice"].GetElementsByTagName("aixm:elevation").Item(0).InnerText, CultureInfo.InvariantCulture);
-                height = height * 0.3048;
+                height = double.Parse(strHeight, CultureInfo.InvariantCulture);
+                // feet to meters
+                height *= 0.3048;
             }
-            catch
-            {
-                height = 50;
-            }
-            double geoid = GetGeoid(lon, lat);
-            height = height + geoid;
+            double geoidHeight = geoid.GetGeoid(lon, lat);
+            // add height(msl) to geoid and additonal margin
+            height = height + geoidHeight + 5;
             double3 position = new double3(lat, lon, height);
+            Material objectMaterial = airportMaterial;
+            int rotation = 0;
+            // Use helipad material
             if (type.Equals("HP"))
             {
-                AnchorNewObject(position, name, PrimitiveType.Plane, helipadMaterial, airports.transform);
+                objectMaterial = helipadMaterial;
             }
-            else
+            // get object rotation from the runway designator
+            else if (type.Equals("AD") || type.Equals("AH"))
             {
-                AnchorNewObject(position, name, PrimitiveType.Plane, airportMaterial, airports.transform);
+                // searches for the associated airport by ICAO in runway data
+                XmlNode linkedAirportNode = runwayXml.DocumentElement.SelectSingleNode($"//aixm:associatedAirportHeliport[@xlink:title='{icao}']", nsmgr);
+                if (linkedAirportNode != null)
+                {
+                    string designator = linkedAirportNode.ParentNode.SelectSingleNode("aixm:designator", nsmgr).InnerText;
+                    // pareses designator to degrees (07/25 -> 70°)
+                    rotation = int.Parse(designator.Substring(0, 2)) * 10;
+                }
+            }
+            GameObject airportObject = AnchorNewObject(position, name, PrimitiveType.Plane, objectMaterial, container.transform, rotation);
+            this.airportsList.Add(airportObject);
+        }
+    }
+
+    /*
+     * Adds all obstacles to scene 
+     */
+    void AddObstacles()
+    {
+        XmlDocument obstacleXml = new XmlDocument();
+        obstacleXml.Load("Assets/Data/ED_Obstacles_Area_1_2023-06-15_2023-06-15_snapshot.xml");
+        XmlNodeList obstacleXmlList = obstacleXml.GetElementsByTagName("aixm:VerticalStructureTimeSlice");
+        XmlNamespaceManager nsmgr = CreateXmlNsmng(obstacleXml);
+
+        foreach(XmlNode obst in obstacleXmlList)
+        {
+            string name = obst.SelectSingleNode("aixm:name", nsmgr).InnerText;
+            XmlNodeList partList = obst.SelectNodes("aixm:part", nsmgr);
+            foreach(XmlNode part in partList)
+            {
+                string[] pos = part.SelectSingleNode("aixm:VerticalStructurePart//gml:pos", nsmgr).InnerText.Split(' ');
+                double lon = double.Parse(pos[0], CultureInfo.InvariantCulture);
+                double lat = double.Parse(pos[1], CultureInfo.InvariantCulture);
+                double height = 50;
+                string strHeight = part.SelectSingleNode("aixm:VerticalStructurePart//aixm:elevation", nsmgr).InnerText;
+                if (!strHeight.Equals(""))
+                {
+                    height = double.Parse(strHeight, CultureInfo.InvariantCulture);
+                    // feet to meters
+                    height *= 0.3048;
+                }
+                double geoidHeight = geoid.GetGeoid(lon, lat);
+                height = height + geoidHeight;
+                double3 position = new double3(lat, lon, height);
+                AnchorNewObject(position, name, PrimitiveType.Cylinder, obstaclePrefab, container.transform);
             }
         }
     }
-    
-    private void AnchorNewObject(double3 position, string name, PrimitiveType primitiveType, Material material, Transform parent)
+
+    private GameObject AnchorNewObject(double3 position, string name, PrimitiveType primitiveType, Material material, Transform parent, int rotation = 0)
     {
         GameObject go = GameObject.CreatePrimitive(primitiveType);
         go.name = name;
@@ -99,72 +168,28 @@ public class dataLoader : MonoBehaviour
         CesiumGlobeAnchor anchor = go.GetComponent<CesiumGlobeAnchor>();
         anchor.longitudeLatitudeHeight = position;
         anchor.transform.localScale = new Vector3(100, 1000, 100);
+        anchor.rotationEastUpNorth *= Quaternion.Euler(Vector3.up * rotation);
+        anchor.scaleEastUpNorth = new double3(500, 500, 500);
+        
+        return go;
     }
-
-    private void InitGeoidDict()
+    
+    private XmlNamespaceManager CreateXmlNsmng(XmlDocument xmlDocument)
     {
-        List<double[]> part = new List<double[]>();
-        string identifier = null;
-        var lines = File.ReadLines("Assets/Data/geoid.csv").Skip(1).ToList();
-        string last = lines.Last();
-        foreach (var line in lines)
-        {
-            string[] rows = line.Split(',');
-            string key = Math.Floor(double.Parse(rows[1], CultureInfo.InvariantCulture) * 100) / 100 +
-                "-" +
-                Math.Floor(double.Parse(rows[2], CultureInfo.InvariantCulture) * 10) / 10;
-            double[] value = new double[]
-            {
-                double.Parse(rows[1], CultureInfo.InvariantCulture),
-                double.Parse(rows[2], CultureInfo.InvariantCulture),
-                double.Parse(rows[3], CultureInfo.InvariantCulture)
-            };
-            if (!key.Equals(identifier) && identifier != null)
-            {
-                try
-                {
-                    geoidDict.Add(identifier, new List<double[]>(part));
-                }
-                catch (Exception e)
-                {
-                    Debug.Log(e);
-                }
-                part.Clear();
-            }
-            part.Add(value);
-            identifier = key;
-        }
-
+        XmlNamespaceManager nsmgr = new XmlNamespaceManager(xmlDocument.NameTable);
+        nsmgr.AddNamespace("gss", "http://www.isotc211.org/2005/gss");
+        nsmgr.AddNamespace("xsi", "http://www.w3.org/2001/XMLSchema-instance");
+        nsmgr.AddNamespace("message", "http://www.aixm.aero/schema/5.1.1/message");
+        nsmgr.AddNamespace("gsr", "http://www.isotc211.org/2005/gsr");
+        nsmgr.AddNamespace("gco", "http://www.isotc211.org/2005/gco");
+        nsmgr.AddNamespace("gml", "http://www.opengis.net/gml/3.2");
+        nsmgr.AddNamespace("gmd", "http://www.isotc211.org/2005/gmd");
+        nsmgr.AddNamespace("aixm", "http://www.aixm.aero/schema/5.1.1");
+        nsmgr.AddNamespace("xlink", "http://www.w3.org/1999/xlink");
+        nsmgr.AddNamespace("gts", "http://www.isotc211.org/2005/gts");
+        return nsmgr;
     }
 
-    public double GetGeoid(double lon, double lat)
-    {
-        string searchKey = Math.Floor(lon * 100) / 100 +
-                "-" +
-                Math.Floor(lat * 10) / 10;
-        List<double[]> region = null;
-        try
-        {
-            region = this.geoidDict[searchKey];
-        }
-        catch
-        {
-            return 0;
-        }
-        double lastDiff = 99999;
-        double lastHeight = 0;
-        foreach (double[] row in region)
-        {
-            double diff = Math.Abs(lat - row[1]);
-            if (diff > lastDiff)
-            {
-                return lastHeight;
-            }
-            lastDiff = diff;
-            lastHeight = row[2];
-        }
-        return lastHeight;
-    }
 
 }
 

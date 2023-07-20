@@ -468,7 +468,7 @@ MonoBehaviour:
   _maximumTextureSize: 2048
   _maximumSimultaneousTileLoads: 20
   _subTileCacheBytes: 16777216
-  _ionAssetID: 3
+  _ionAssetID: 2
   _ionAccessToken: 
 --- !u!1 &829711579
 GameObject:
@@ -500,7 +500,7 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 829711579}
-  m_LocalRotation: {x: -0.000008888264, y: -3.0160982e-18, z: 0.000012077311, w: 1}
+  m_LocalRotation: {x: 0.000006199709, y: 1.8574439e-12, z: 0.000003206388, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -631,24 +631,24 @@ MonoBehaviour:
   _detectTransformChanges: 1
   _localToGlobeFixedMatrix:
     c0:
-      x: -0.1812848593905063
-      y: 0.9834306276508666
-      z: 0.000018814545458494768
+      x: -0.18129580143088575
+      y: 0.9834286107077532
+      z: 0.000004995109747108424
       w: 0
     c1:
-      x: 0.616740363593176
-      y: 0.11367455111665258
-      z: 0.7789155412131566
+      x: 0.6167131443968361
+      y: 0.11368757394515316
+      z: 0.7789351918219081
       w: 0
     c2:
-      x: -0.7660072608472597
-      y: -0.14121719805551416
-      z: 0.6271288378815221
+      x: -0.7660265856428877
+      y: -0.14122076041391232
+      z: 0.6271044306305101
       w: 0
     c3:
-      x: 3941552.5178717235
-      y: 726644.5504529063
-      z: 4944895.240259507
+      x: 3942940.1431985945
+      y: 726900.3659919025
+      z: 4946647.825310863
       w: 1
   _localToGlobeFixedMatrixIsValid: 1
 --- !u!114 &829711584
@@ -854,10 +854,10 @@ MonoBehaviour:
   _originAuthority: 0
   _latitude: 51.162408881414336
   _longitude: 10.445476086596582
-  _height: 0
-  _ecefX: 3941552.5178717235
-  _ecefY: 726644.5504529063
-  _ecefZ: 4944895.240259507
+  _height: 2250
+  _ecefX: 3942940.1431985945
+  _ecefY: 726900.3659919025
+  _ecefZ: 4946647.825310863
   _scale: 1
 --- !u!4 &877393678
 Transform:
@@ -886,6 +886,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1851817034}
+  - component: {fileID: 1851817036}
   - component: {fileID: 1851817035}
   m_Layer: 0
   m_Name: DataLoader
@@ -921,5 +922,19 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0dcc97c21f8a2e044afeae115cc9fbdb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  dynamicCamera: {fileID: 829711579}
   airportMaterial: {fileID: 2100000, guid: ccae375cbdd7bc142a617b96542bfffa, type: 2}
   helipadMaterial: {fileID: 2100000, guid: d3690298684d41443846c3d43cff93b6, type: 2}
+  obstaclePrefab: {fileID: 2100000, guid: 039d4c300fffce84f8003335489f5fdf, type: 2}
+--- !u!114 &1851817036
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1851817033}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: de756720e7b69cb4bbec13f793bba604, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
