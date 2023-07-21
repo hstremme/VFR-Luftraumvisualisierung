@@ -926,6 +926,7 @@ MonoBehaviour:
   airportMaterial: {fileID: 2100000, guid: ccae375cbdd7bc142a617b96542bfffa, type: 2}
   helipadMaterial: {fileID: 2100000, guid: d3690298684d41443846c3d43cff93b6, type: 2}
   obstaclePrefab: {fileID: 2100000, guid: 039d4c300fffce84f8003335489f5fdf, type: 2}
+  windmillMat: {fileID: 2100000, guid: 20dccb3cb723521469e6877e8405953c, type: 2}
 --- !u!114 &1851817036
 MonoBehaviour:
   m_ObjectHideFlags: 0
