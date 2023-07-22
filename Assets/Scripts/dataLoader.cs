@@ -36,7 +36,7 @@ public class dataLoader : MonoBehaviour
     {
         geoid = this.GetComponentInParent<Geoid>();
 
-        container = new GameObject("AirportsContainer");
+        container = new GameObject("Container");
         container.transform.SetParent(this.transform.parent.transform);
         container.AddComponent<CesiumSubScene>();
         container.GetComponent<CesiumSubScene>().activationRadius = 10000000;
@@ -136,6 +136,9 @@ public class dataLoader : MonoBehaviour
                 }
             }
             GameObject airportObject = AnchorNewObject(position, name, PrimitiveType.Plane, objectMaterial, container.transform, rotation);
+            AirportInfo info = airportObject.AddComponent<AirportInfo>();
+            info.name = name;
+            info.type = type;
             this.airportsList.Add(airportObject);
         }
     }
