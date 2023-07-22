@@ -10,5 +10,6 @@ public class Limit
     public int value;
     public HeightUnit unit;
     public int referenceDatum;
+    public double inMeters;
 
 }

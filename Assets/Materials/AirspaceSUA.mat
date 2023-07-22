@@ -7,7 +7,7 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: Airspace
+  m_Name: AirspaceSUA
   m_Shader: {fileID: 4800000, guid: 650dd9526735d5b46b79224bc6e94025, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
@@ -67,8 +67,8 @@ Material:
     - _Surface: 1
     - _ZWrite: 0
     m_Colors:
-    - _BaseColor: {r: 0, g: 0.0912338, b: 0.6509434, a: 0.6117647}
-    - _Color: {r: 0, g: 0.09123377, b: 0.6509434, a: 0.6117647}
+    - _BaseColor: {r: 0.6313726, g: 0.21568628, b: 0.54509807, a: 0.6117647}
+    - _Color: {r: 0.6313726, g: 0.2156862, b: 0.545098, a: 0.6117647}
   m_BuildTextureStacks: []
 --- !u!114 &984154827389652772
 MonoBehaviour:

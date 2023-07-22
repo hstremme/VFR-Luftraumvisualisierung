@@ -9,7 +9,7 @@ public class Airspace
     public string _id;
     public string name;
     public int type;
-    public int icaoClass;
+    public ICAOClass icaoClass;
     public bool onDemand;
     public bool onRequest;
     public bool byNotam;

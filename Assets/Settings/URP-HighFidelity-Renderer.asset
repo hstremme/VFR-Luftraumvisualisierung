@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 877ff7030d4e20942adf8753310efab8, type: 3}
   m_Name: Outlines
   m_EditorClassIdentifier: 
-  m_Active: 1
+  m_Active: 0
   settings:
     material: {fileID: 2100000, guid: 3b413f8a20fd15f43a47dbb7cceb2cb5, type: 2}
     materialPassIndex: 0
