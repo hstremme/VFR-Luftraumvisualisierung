@@ -158,7 +158,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 1, y: 0.5}
   m_AnchorMax: {x: 1, y: 0.5}
-  m_AnchoredPosition: {x: -0.1275, y: 0.711}
+  m_AnchoredPosition: {x: -0.12750244, y: 0.711}
   m_SizeDelta: {x: 0.06, y: -1.405}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &8141901
@@ -430,7 +430,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 1, y: 0.5}
   m_AnchorMax: {x: 1, y: 0.5}
-  m_AnchoredPosition: {x: -0.05, y: 0}
+  m_AnchoredPosition: {x: -0.049987793, y: 0}
   m_SizeDelta: {x: 0.055, y: 0.305}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &344077595
@@ -763,7 +763,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 1, y: 0.5}
   m_AnchorMax: {x: 1, y: 0.5}
-  m_AnchoredPosition: {x: -0.13, y: 0}
+  m_AnchoredPosition: {x: -0.13000488, y: 0}
   m_SizeDelta: {x: 0.065, y: 0.024}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &616271693
@@ -1156,8 +1156,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _enableMovement: 1
   _enableRotation: 1
-  _defaultMaximumSpeed: 100
-  _enableDynamicSpeed: 1
+  _defaultMaximumSpeed: 10000
+  _enableDynamicSpeed: 0
   _dynamicSpeedMinHeight: 20
   _enableDynamicClippingPlanes: 1
   _dynamicClippingPlanesMinHeight: 10000
@@ -1464,7 +1464,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 1, y: 0.5}
   m_AnchorMax: {x: 1, y: 0.5}
-  m_AnchoredPosition: {x: -0.05, y: 0}
+  m_AnchoredPosition: {x: -0.049987793, y: 0}
   m_SizeDelta: {x: 0.075, y: 0.005}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1110436229
@@ -1660,7 +1660,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 1, y: 0.5}
   m_AnchorMax: {x: 1, y: 0.5}
-  m_AnchoredPosition: {x: -0.05, y: 0}
+  m_AnchoredPosition: {x: -0.049987793, y: 0}
   m_SizeDelta: {x: 0.05, y: 0.3}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1761996059
@@ -1733,7 +1733,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 1, y: 0.5}
   m_AnchorMax: {x: 1, y: 0.5}
-  m_AnchoredPosition: {x: -0.13, y: 0}
+  m_AnchoredPosition: {x: -0.13000488, y: 0}
   m_SizeDelta: {x: 0.06, y: 0.02}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1779078599
