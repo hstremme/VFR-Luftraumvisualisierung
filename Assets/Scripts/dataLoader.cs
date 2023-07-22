@@ -20,6 +20,8 @@ public class dataLoader : MonoBehaviour
     public Material helipadMaterial;
 
     public Material obstaclePrefab;
+
+    public Material windmillMat;
     
     private Geoid geoid;
 
@@ -34,7 +36,7 @@ public class dataLoader : MonoBehaviour
     {
         geoid = this.GetComponentInParent<Geoid>();
 
-        container = new GameObject("AirportsContainer");
+        container = new GameObject("Container");
         container.transform.SetParent(this.transform.parent.transform);
         container.AddComponent<CesiumSubScene>();
         container.GetComponent<CesiumSubScene>().activationRadius = 10000000;
@@ -49,18 +51,35 @@ public class dataLoader : MonoBehaviour
     void Update()
     {
         double camHeight = dynamicCamera.GetComponent<CesiumGlobeAnchor>().longitudeLatitudeHeight.z;
-        //if (lastCamHeight != camHeight)
-        //{
-        //    Debug.Log("Height Changed");
-        //    lastCamHeight = camHeight;
-        //    if (lastCamHeight < 100000 && lastCamHeight > 700)
-        //    {
-        //        foreach(var airport in airportsList)
-        //        {
-        //            airport.GetComponent<CesiumGlobeAnchor>().scaleEastUpNorth = camHeight / 100;
-        //        }
-        //    }
-        //} 
+        if (lastCamHeight > 150000 && camHeight < 150000)
+        {
+                foreach(var airport in airportsList)
+                {
+                    airport.GetComponent<CesiumGlobeAnchor>().scaleEastUpNorth = 200;
+                }
+        } 
+        else if (lastCamHeight < 150000 && camHeight > 150000)
+        {
+                foreach(var airport in airportsList)
+                {
+                    airport.GetComponent<CesiumGlobeAnchor>().scaleEastUpNorth = 500;
+                }
+        }
+        else if (lastCamHeight > 20000 && camHeight < 20000)
+        {
+                foreach(var airport in airportsList)
+                {
+                    airport.GetComponent<CesiumGlobeAnchor>().scaleEastUpNorth = 80;
+                }
+        }
+        else if (lastCamHeight < 20000 && camHeight > 20000)
+        {
+                foreach(var airport in airportsList)
+                {
+                    airport.GetComponent<CesiumGlobeAnchor>().scaleEastUpNorth = 200;
+                }
+        }
+        lastCamHeight = camHeight;
     }
 
     /*
@@ -117,6 +136,9 @@ public class dataLoader : MonoBehaviour
                 }
             }
             GameObject airportObject = AnchorNewObject(position, name, PrimitiveType.Plane, objectMaterial, container.transform, rotation);
+            AirportInfo info = airportObject.AddComponent<AirportInfo>();
+            info.name = name;
+            info.type = type;
             this.airportsList.Add(airportObject);
         }
     }
@@ -137,6 +159,30 @@ public class dataLoader : MonoBehaviour
             XmlNodeList partList = obst.SelectNodes("aixm:part", nsmgr);
             foreach(XmlNode part in partList)
             {
+                Material mat = obstaclePrefab;
+                string type = part.SelectSingleNode("aixm:VerticalStructurePart//aixm:note", nsmgr).InnerText.Split(":")[1].Trim();
+                switch (type)
+                {
+                    case "WINDMILL":
+                        mat = windmillMat; 
+                        break;
+                    case "TOWER":
+                        mat = Resources.Load("Materials/Tower") as Material;
+                        break;
+                    case "SPIRE":
+                        mat = Resources.Load("Materials/Spire") as Material;
+                        break;
+                    case "BUILDING":
+                        mat = Resources.Load("Materials/Building") as Material;
+                        break;
+                    case "ANTENNA":
+                        mat = Resources.Load("Materials/Antenna") as Material;
+                        break;
+                    case "STACK":
+                        mat = Resources.Load("Materials/Stack") as Material;
+                        break;
+                }
+                Debug.Log(type);
                 string[] pos = part.SelectSingleNode("aixm:VerticalStructurePart//gml:pos", nsmgr).InnerText.Split(' ');
                 double lon = double.Parse(pos[0], CultureInfo.InvariantCulture);
                 double lat = double.Parse(pos[1], CultureInfo.InvariantCulture);
@@ -151,7 +197,7 @@ public class dataLoader : MonoBehaviour
                 double geoidHeight = geoid.GetGeoid(lon, lat);
                 height = height + geoidHeight;
                 double3 position = new double3(lat, lon, height);
-                AnchorNewObject(position, name, PrimitiveType.Cylinder, obstaclePrefab, container.transform);
+                AnchorNewObject(position, name, PrimitiveType.Cylinder, mat, container.transform);
             }
         }
     }
