@@ -79,6 +79,12 @@ public class AirspacesRenderer : MonoBehaviour
             upperLimit = (float) (geoid.GetGeoid(lon, lat) + upperLimit);
         }
 
+        var temp = lowerLimit;
+        if(lowerLimit > upperLimit) {
+            lowerLimit = upperLimit;
+            upperLimit = temp;
+        }
+
         airspace.lowerLimit.inMeters = lowerLimit;
         airspace.upperLimit.inMeters = upperLimit;
 
