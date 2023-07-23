@@ -36,13 +36,6 @@ public class dataLoader : MonoBehaviour
     {
         geoid = this.GetComponentInParent<Geoid>();
 
-        container = new GameObject("Container");
-        container.transform.SetParent(this.transform.parent.transform);
-        container.AddComponent<CesiumSubScene>();
-        container.GetComponent<CesiumSubScene>().activationRadius = 10000000;
-        container.GetComponent<CesiumSubScene>().latitude = 51.162408881414336;
-        container.GetComponent<CesiumSubScene>().longitude = 10.445476086596582;
-
         AddAirports();
         AddObstacles();
     }
@@ -135,7 +128,7 @@ public class dataLoader : MonoBehaviour
                     rotation = int.Parse(designator.Substring(0, 2)) * 10;
                 }
             }
-            GameObject airportObject = AnchorNewObject(position, name, PrimitiveType.Plane, objectMaterial, container.transform, rotation);
+            GameObject airportObject = AnchorNewObject(position, name, PrimitiveType.Plane, objectMaterial, this.transform.parent, rotation);
             AirportInfo info = airportObject.AddComponent<AirportInfo>();
             info.name = name;
             info.type = type;
@@ -197,7 +190,7 @@ public class dataLoader : MonoBehaviour
                 double geoidHeight = geoid.GetGeoid(lon, lat);
                 height = height + geoidHeight;
                 double3 position = new double3(lat, lon, height);
-                AnchorNewObject(position, name, PrimitiveType.Cylinder, mat, container.transform);
+                AnchorNewObject(position, name, PrimitiveType.Cylinder, mat, this.transform.parent);
             }
         }
     }
