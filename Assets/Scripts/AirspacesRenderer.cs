@@ -22,7 +22,6 @@ public class AirspacesRenderer : MonoBehaviour
     private Geoid geoid;
 
     void Awake() {
-        geoid = GameObject.Find("DataLoader").GetComponent<Geoid>();
         dataLoaderJson = GameObject.Find("DataLoaderJson").GetComponent<DataLoaderJson>();
         cesiumGeoreference = GameObject.Find("CesiumGeoreference").GetComponent<CesiumGeoreference>();
     }
@@ -30,6 +29,7 @@ public class AirspacesRenderer : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        geoid = GameObject.Find("DataLoader").GetComponent<Geoid>();
         airspaceMaterials[ICAOClass.A] = airspaceMaterialIcaoClassA;
         airspaceMaterials[ICAOClass.B] = airspaceMaterialIcaoClassB;
         airspaceMaterials[ICAOClass.C] = airspaceMaterialIcaoClassC;
@@ -66,7 +66,7 @@ public class AirspacesRenderer : MonoBehaviour
         else if(airspace.lowerLimit.unit == HeightUnit.MSL) {
             double lon = double.Parse(firstLongitude, CultureInfo.InvariantCulture);
             double lat = double.Parse(firstLatitude, CultureInfo.InvariantCulture);
-            lowerLimit = (float) (geoid.GetGeoid(lon, lat) + lowerLimit);
+            lowerLimit = (float) (geoid.GetGeoid(lat, lon) + lowerLimit);
         }
 
         float upperLimit = airspace.upperLimit.value;
@@ -76,7 +76,7 @@ public class AirspacesRenderer : MonoBehaviour
         else if(airspace.upperLimit.unit == HeightUnit.MSL) {
             double lon = double.Parse(firstLongitude, CultureInfo.InvariantCulture);
             double lat = double.Parse(firstLatitude, CultureInfo.InvariantCulture);
-            upperLimit = (float) (geoid.GetGeoid(lon, lat) + upperLimit);
+            upperLimit = (float) (geoid.GetGeoid(lat, lon) + upperLimit);
         }
 
         var temp = lowerLimit;
