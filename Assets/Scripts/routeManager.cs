@@ -28,11 +28,14 @@ public class routeManager : MonoBehaviour
     private GameObject routeSpline;
     private GameObject miniMapRouteSpline;
     public GameObject activeCP;
+    private FlightLevelDisplay flightLevelDisplay;
 
     private int flag;
     // Start is called before the first frame update
     void Start()
     {
+        // Get FlightLevelDisplay
+        flightLevelDisplay = GameObject.Find("FlightLevelDisplay").GetComponent<FlightLevelDisplay>();
 
         // get geoid script refrenz
         Geoid = dataLoader.GetComponent<Geoid>();
@@ -49,8 +52,7 @@ public class routeManager : MonoBehaviour
         }
 
         // set first active cp
-        activeCP = checkpoints[0];
-        activeCP.GetComponent<SetupCP>().setCPMaterialStatus(true);
+        setAsActiveCP(checkpoints[0]);
     }
 
     // Update is called once per frame
@@ -180,11 +182,14 @@ public class routeManager : MonoBehaviour
     void setAsActiveCP(GameObject cp)
     {
         // reset material of old cp
-        activeCP.GetComponent<SetupCP>().setCPMaterialStatus(false);
+        if(activeCP) {
+            activeCP.GetComponent<SetupCP>().setCPMaterialStatus(false);
+        }
 
         // set new active cp
         activeCP = cp;
         activeCP.GetComponent<SetupCP>().setCPMaterialStatus(true);
+        flightLevelDisplay.UpdateCheckpoint(cp);
     }
 
     void changeToNextCP(bool increment)
@@ -212,6 +217,7 @@ public class routeManager : MonoBehaviour
 
         // set new Position
         activeCP.GetComponent<CesiumGlobeAnchor>().longitudeLatitudeHeight = position;
+        flightLevelDisplay.UpdateCheckpoint(activeCP);
 
         // update spline
         updateSpline(routeSpline, checkpoints, 80);

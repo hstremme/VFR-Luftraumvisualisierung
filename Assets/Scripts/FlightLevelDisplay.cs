@@ -37,12 +37,11 @@ public class FlightLevelDisplay : MonoBehaviour
         flightLevelRadiusInMeters = flightLevelRangeInMeters / 2;
     }
 
-    // Update is called once per frame
-    void Update()
-    {
+    public void UpdateCheckpoint(GameObject checkpoint) {
         // TODO: replace with current checkpoint's position
-        double3 positionLLH = dynamicCameraAnchor.longitudeLatitudeHeight;
-        double3 positionExtendedByRadiusLLH = dynamicCameraAnchor.longitudeLatitudeHeight;
+        CesiumGlobeAnchor checkpointAnchor = checkpoint.GetComponent<CesiumGlobeAnchor>();
+        double3 positionLLH = checkpointAnchor.longitudeLatitudeHeight;
+        double3 positionExtendedByRadiusLLH = checkpointAnchor.longitudeLatitudeHeight;
         positionExtendedByRadiusLLH.z += flightLevelRangeInMeters * 2; // why 2? idek, just moooore
         double3 positionEcef = CesiumWgs84Ellipsoid.LongitudeLatitudeHeightToEarthCenteredEarthFixed(positionExtendedByRadiusLLH);
         double3 position = cesiumGeoreference.TransformEarthCenteredEarthFixedPositionToUnity(positionEcef);

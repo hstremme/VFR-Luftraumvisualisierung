@@ -10,6 +10,7 @@ public class AirspacesRenderer : MonoBehaviour
 
     private DataLoaderJson dataLoaderJson;
     private CesiumGeoreference cesiumGeoreference;
+    private CesiumGeoreference cesiumGeoreference2D;
     private Dictionary<ICAOClass, Material> airspaceMaterials = new Dictionary<ICAOClass, Material>();
     public Material airspaceMaterialIcaoClassA;
     public Material airspaceMaterialIcaoClassB;
@@ -24,6 +25,7 @@ public class AirspacesRenderer : MonoBehaviour
     void Awake() {
         dataLoaderJson = GameObject.Find("DataLoaderJson").GetComponent<DataLoaderJson>();
         cesiumGeoreference = GameObject.Find("CesiumGeoreference").GetComponent<CesiumGeoreference>();
+        cesiumGeoreference2D = GameObject.Find("CesiumGeoreferenceMiniMap").GetComponent<CesiumGeoreference>();
     }
 
     // Start is called before the first frame update
@@ -160,6 +162,27 @@ public class AirspacesRenderer : MonoBehaviour
             tris.Add(i - positions.Length);
         }
 
+        // 2D GameObject
+        GameObject miniMapObject = new GameObject(airspace.name + " Polygon");
+        miniMapObject.transform.SetParent(cesiumGeoreference2D.transform);
+        LineRenderer polygonRenderer = miniMapObject.AddComponent<LineRenderer>();
+        polygonRenderer.positionCount = vertices2D.Length;
+
+        for(int currentPoint = 0; currentPoint < vertices2D.Length; currentPoint++) {
+            polygonRenderer.SetPosition(currentPoint, vertices[currentPoint]);
+        }
+
+        polygonRenderer.loop = true;
+        polygonRenderer.useWorldSpace = false;
+        polygonRenderer.material = airspaceMaterials[airspace.icaoClass];
+        polygonRenderer.widthMultiplier = 2000;
+
+        CesiumGlobeAnchor anchor2D = miniMapObject.AddComponent<CesiumGlobeAnchor>();
+        anchor2D.longitudeLatitudeHeight = new double3(positions[0].x, positions[0].y, 0);
+        anchor2D.transform.localScale = new Vector3(1, 1, 1);
+        miniMapObject.layer = LayerMask.NameToLayer("miniMap");
+
+        // 3D GameObject
         GameObject gObject = new GameObject(airspace.name);
         gObject.transform.SetParent(cesiumGeoreference.transform);
 
