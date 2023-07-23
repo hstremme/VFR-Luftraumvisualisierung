@@ -39,11 +39,10 @@ public class dataLoader : MonoBehaviour
         AddAirports();
         //AddObstacles();
 
-        GameObject copiedContainer = Instantiate(container, GameObject.Find("CesiumGeoreferenceMiniMap").transform);
-        copiedContainer.layer = LayerMask.NameToLayer("miniMap");
-        foreach(Transform child in copiedContainer.transform)
+        foreach(GameObject airport in airportsList)
         {
-            child.gameObject.layer = LayerMask.NameToLayer("miniMap");
+            GameObject copiedAirport = Instantiate(airport, GameObject.Find("CesiumGeoreferenceMiniMap").transform);
+            copiedAirport.layer = LayerMask.NameToLayer("miniMap");
         }
     }
 
@@ -115,7 +114,7 @@ public class dataLoader : MonoBehaviour
             double geoidHeight = geoid.GetGeoid(lat, lon);
             // add height(msl) to geoid and additonal margin
             height = height + geoidHeight + 5;
-            double3 position = new double3(lat, lon, height);
+            double3 position = new double3(lon, lat, height);
             Material objectMaterial = airportMaterial;
             int rotation = 0;
             // Use helipad material
@@ -196,7 +195,7 @@ public class dataLoader : MonoBehaviour
                 }
                 double geoidHeight = geoid.GetGeoid(lat, lon);
                 height = height + geoidHeight;
-                double3 position = new double3(lat, lon, height);
+                double3 position = new double3(lon, lat, height);
                 AnchorNewObject(position, name, PrimitiveType.Cylinder, mat, this.transform.parent);
             }
         }
