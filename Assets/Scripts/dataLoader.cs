@@ -44,7 +44,14 @@ public class dataLoader : MonoBehaviour
         container.GetComponent<CesiumSubScene>().longitude = 10.445476086596582;
 
         AddAirports();
-        AddObstacles();
+        //AddObstacles();
+
+        GameObject copiedContainer = Instantiate(container, GameObject.Find("CesiumGeoreferenceMiniMap").transform);
+        copiedContainer.layer = LayerMask.NameToLayer("miniMap");
+        foreach(Transform child in copiedContainer.transform)
+        {
+            child.gameObject.layer = LayerMask.NameToLayer("miniMap");
+        }
     }
 
     // Update is called once per frame
