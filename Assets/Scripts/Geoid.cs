@@ -51,11 +51,11 @@ public class Geoid : MonoBehaviour
 
     }
 
-    public double GetGeoid(double lon, double lat)
+    public double GetGeoid(double lat, double lon)
     {
-        string searchKey = Math.Floor(lon * 100) / 100 +
+        string searchKey = Math.Floor(lat * 100) / 100 +
                 "-" +
-                Math.Floor(lat * 10) / 10;
+                Math.Floor(lon * 10) / 10;
         List<double[]> region = null;
         try
         {

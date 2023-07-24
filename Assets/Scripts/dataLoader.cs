@@ -43,7 +43,13 @@ public class dataLoader : MonoBehaviour
         InitObstaclesDict();
 
         AddAirports();
-        AddObstacles();
+        //AddObstacles();
+
+        foreach(GameObject airport in airportsList)
+        {
+            GameObject copiedAirport = Instantiate(airport, GameObject.Find("CesiumGeoreferenceMiniMap").transform);
+            copiedAirport.layer = LayerMask.NameToLayer("miniMap");
+        }
     }
 
     // Update is called once per frame
@@ -124,8 +130,8 @@ public class dataLoader : MonoBehaviour
             string[] pos = xmlPart.GetElementsByTagName("gml:pos").Item(0).InnerText.Split(' ');
             string type = xmlPart.GetElementsByTagName("aixm:type").Item(0).InnerText;
             string icao = xmlPart.GetElementsByTagName("aixm:locationIndicatorICAO").Item(0).InnerText;
-            double lon = double.Parse(pos[0], CultureInfo.InvariantCulture);
-            double lat = double.Parse(pos[1], CultureInfo.InvariantCulture);
+            double lat = double.Parse(pos[0], CultureInfo.InvariantCulture);
+            double lon = double.Parse(pos[1], CultureInfo.InvariantCulture);
             // Set default height to 50 meters
             double height = 50;
             string strHeight = airportXmlList.Item(i)["aixm:timeSlice"].GetElementsByTagName("aixm:elevation").Item(0).InnerText;
@@ -135,10 +141,10 @@ public class dataLoader : MonoBehaviour
                 // feet to meters
                 height *= 0.3048;
             }
-            double geoidHeight = geoid.GetGeoid(lon, lat);
+            double geoidHeight = geoid.GetGeoid(lat, lon);
             // add height(msl) to geoid and additonal margin
             height = height + geoidHeight + 5;
-            double3 position = new double3(lat, lon, height);
+            double3 position = new double3(lon, lat, height);
             Material objectMaterial = airportMaterial;
             int rotation = 0;
             // Use helipad material
@@ -154,7 +160,7 @@ public class dataLoader : MonoBehaviour
                 if (linkedAirportNode != null)
                 {
                     string designator = linkedAirportNode.ParentNode.SelectSingleNode("aixm:designator", nsmgr).InnerText;
-                    // pareses designator to degrees (07/25 -> 70°)
+                    // pareses designator to degrees (07/25 -> 70Â°)
                     rotation = int.Parse(designator.Substring(0, 2)) * 10;
                 }
             }
@@ -207,8 +213,8 @@ public class dataLoader : MonoBehaviour
                 }
                 Debug.Log(type);
                 string[] pos = part.SelectSingleNode("aixm:VerticalStructurePart//gml:pos", nsmgr).InnerText.Split(' ');
-                double lon = double.Parse(pos[0], CultureInfo.InvariantCulture);
-                double lat = double.Parse(pos[1], CultureInfo.InvariantCulture);
+                double lon = double.Parse(pos[1], CultureInfo.InvariantCulture);
+                double lat = double.Parse(pos[0], CultureInfo.InvariantCulture);
                 double height = 50;
                 string strHeight = part.SelectSingleNode("aixm:VerticalStructurePart//aixm:elevation", nsmgr).InnerText;
                 if (!strHeight.Equals(""))
@@ -217,7 +223,7 @@ public class dataLoader : MonoBehaviour
                     // feet to meters
                     height *= 0.3048;
                 }
-                double geoidHeight = geoid.GetGeoid(lon, lat);
+                double geoidHeight = geoid.GetGeoid(lat, lon);
                 height = height + geoidHeight;
                 double3 position = new double3(lat, lon, height);
                 GameObject obstacle = AnchorNewObject(position, name, PrimitiveType.Cylinder, mat, this.transform.parent);
