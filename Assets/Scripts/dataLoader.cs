@@ -29,12 +29,18 @@ public class dataLoader : MonoBehaviour
 
     private GameObject container;
 
-    private double lastCamHeight = 0;
+    private double3 lastCamPos;
+
+    private Dictionary<string, List<GameObject>> obstacleDict = new Dictionary<string, List<GameObject>>();
+    
+    private List<string> activatedObstacles = new List<string>();
 
     // Start is called before the first frame update
     void Start()
     {
+        lastCamPos.z = 2250;
         geoid = this.GetComponentInParent<Geoid>();
+        InitObstaclesDict();
 
         AddAirports();
         //AddObstacles();
@@ -49,36 +55,60 @@ public class dataLoader : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        double camHeight = dynamicCamera.GetComponent<CesiumGlobeAnchor>().longitudeLatitudeHeight.z;
-        if (lastCamHeight > 150000 && camHeight < 150000)
+        double3 camPos = dynamicCamera.GetComponent<CesiumGlobeAnchor>().longitudeLatitudeHeight;
+        if (lastCamPos.z > 150000 && camPos.z < 150000)
         {
                 foreach(var airport in airportsList)
                 {
                     airport.GetComponent<CesiumGlobeAnchor>().scaleEastUpNorth = 200;
                 }
         } 
-        else if (lastCamHeight < 150000 && camHeight > 150000)
+        else if (lastCamPos.z < 150000 && camPos.z > 150000)
         {
                 foreach(var airport in airportsList)
                 {
                     airport.GetComponent<CesiumGlobeAnchor>().scaleEastUpNorth = 500;
                 }
         }
-        else if (lastCamHeight > 20000 && camHeight < 20000)
+        else if (lastCamPos.z > 20000 && camPos.z < 20000)
         {
                 foreach(var airport in airportsList)
                 {
                     airport.GetComponent<CesiumGlobeAnchor>().scaleEastUpNorth = 80;
                 }
         }
-        else if (lastCamHeight < 20000 && camHeight > 20000)
+        else if (lastCamPos.z < 20000 && camPos.z > 20000)
         {
                 foreach(var airport in airportsList)
                 {
                     airport.GetComponent<CesiumGlobeAnchor>().scaleEastUpNorth = 200;
                 }
         }
-        lastCamHeight = camHeight;
+        // Controls dynamic display of obstacles
+        if(lastCamPos.x != camPos.x || lastCamPos.y != camPos.y)
+        {
+            string id = Math.Floor(camPos.y) + "-" + Math.Floor(camPos.x);
+            // if cam is in an square that is not activated yet
+            if (!this.activatedObstacles.Contains(id))
+            {
+                foreach(GameObject obstacle in this.obstacleDict[id])
+                {
+                    obstacle.SetActive(true);
+                }
+                // deactivates all obstacles in left behind squares
+                for (int i = this.activatedObstacles.Count - 1; i >= 0; i--) 
+                {
+                    string activeId = this.activatedObstacles[i];
+                    foreach(GameObject activeObst in this.obstacleDict[activeId])
+                    {
+                       activeObst.SetActive(false);  
+                    }
+                    this.activatedObstacles.Remove(activeId);
+                }
+                this.activatedObstacles.Add(id);
+            }
+        }
+        lastCamPos = camPos;
     }
 
     /*
@@ -130,7 +160,7 @@ public class dataLoader : MonoBehaviour
                 if (linkedAirportNode != null)
                 {
                     string designator = linkedAirportNode.ParentNode.SelectSingleNode("aixm:designator", nsmgr).InnerText;
-                    // pareses designator to degrees (07/25 -> 70°)
+                    // pareses designator to degrees (07/25 -> 70Â°)
                     rotation = int.Parse(designator.Substring(0, 2)) * 10;
                 }
             }
@@ -195,8 +225,12 @@ public class dataLoader : MonoBehaviour
                 }
                 double geoidHeight = geoid.GetGeoid(lat, lon);
                 height = height + geoidHeight;
-                double3 position = new double3(lon, lat, height);
-                AnchorNewObject(position, name, PrimitiveType.Cylinder, mat, this.transform.parent);
+                double3 position = new double3(lat, lon, height);
+                GameObject obstacle = AnchorNewObject(position, name, PrimitiveType.Cylinder, mat, this.transform.parent);
+                obstacle.SetActive(false);
+                // adds the obstacle to the obstacle dictionary
+                string id = Math.Floor(lon) + "-" + Math.Floor(lat);
+                this.obstacleDict[id].Add(obstacle);
             }
         }
     }
@@ -233,6 +267,19 @@ public class dataLoader : MonoBehaviour
         nsmgr.AddNamespace("xlink", "http://www.w3.org/1999/xlink");
         nsmgr.AddNamespace("gts", "http://www.isotc211.org/2005/gts");
         return nsmgr;
+    }
+
+    private void InitObstaclesDict()
+    {
+        for (int i = 47;  i <= 55; i++)
+        {
+            for (int j = 5; j <= 15; j++)
+            {
+                string id = "" + i + "-" + j;
+                List<GameObject> list = new List<GameObject>();
+                this.obstacleDict.Add(id, list);
+            }
+        }
     }
 
 
