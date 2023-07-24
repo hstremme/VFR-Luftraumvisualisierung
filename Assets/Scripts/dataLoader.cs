@@ -43,7 +43,7 @@ public class dataLoader : MonoBehaviour
         InitObstaclesDict();
 
         AddAirports();
-        //AddObstacles();
+        AddObstacles();
 
         foreach(GameObject airport in airportsList)
         {
@@ -89,9 +89,9 @@ public class dataLoader : MonoBehaviour
         {
             string id = Math.Floor(camPos.y) + "-" + Math.Floor(camPos.x);
             // if cam is in an square that is not activated yet
-            if (!this.activatedObstacles.Contains(id))
+            if (!this.activatedObstacles.Contains(id) && this.obstacleDict.ContainsKey(id))
             {
-                foreach(GameObject obstacle in this.obstacleDict[id])
+                 foreach(GameObject obstacle in this.obstacleDict[id])
                 {
                     obstacle.SetActive(true);
                 }
@@ -225,11 +225,11 @@ public class dataLoader : MonoBehaviour
                 }
                 double geoidHeight = geoid.GetGeoid(lat, lon);
                 height = height + geoidHeight;
-                double3 position = new double3(lat, lon, height);
+                double3 position = new double3(lon, lat, height);
                 GameObject obstacle = AnchorNewObject(position, name, PrimitiveType.Cylinder, mat, this.transform.parent);
                 obstacle.SetActive(false);
                 // adds the obstacle to the obstacle dictionary
-                string id = Math.Floor(lon) + "-" + Math.Floor(lat);
+                string id = Math.Floor(lat) + "-" + Math.Floor(lon);
                 this.obstacleDict[id].Add(obstacle);
             }
         }
