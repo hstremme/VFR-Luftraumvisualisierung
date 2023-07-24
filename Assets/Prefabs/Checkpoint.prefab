@@ -134,6 +134,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   cpHeight: 1200
-  cpPositonMarker: {fileID: 2100000, guid: 907297aef5081b04885b35c386ba7871, type: 2}
+  cpPositonMarker: {fileID: 2100000, guid: fe800e545adca9d48ab97660a4537337, type: 2}
   activeCpMaterial: {fileID: 2100000, guid: 4f7abb34d92e5204b9a90e5d83d34fff, type: 2}
   baseCpMaterial: {fileID: 2100000, guid: 44bef536a57330a42ad0cd4f7ea6ea29, type: 2}

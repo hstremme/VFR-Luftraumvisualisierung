@@ -28,6 +28,7 @@ public class routeManager : MonoBehaviour
     private GameObject routeSpline;
     private GameObject miniMapRouteSpline;
     public GameObject activeCP;
+    private int activeCPIndex = 0;
     private FlightLevelDisplay flightLevelDisplay;
 
     private int flag;
@@ -52,7 +53,7 @@ public class routeManager : MonoBehaviour
         }
 
         // set first active cp
-        setAsActiveCP(checkpoints[0]);
+        setAsActiveCP(0);
     }
 
     // Update is called once per frame
@@ -115,7 +116,7 @@ public class routeManager : MonoBehaviour
         CesiumGlobeAnchor anchor = checkpoint.GetComponent<CesiumGlobeAnchor>();
         anchor.longitudeLatitudeHeight = position;
 
-        // add cp to 3D map
+        // add cp to 2D map
         GameObject miniMapCheckpoint = Instantiate(checkpointPrefab);
         miniMapCheckpoint.name = "mM_"+name;
         miniMapCheckpoint.transform.SetParent(miniMapGeoRef.transform);
@@ -153,7 +154,7 @@ public class routeManager : MonoBehaviour
     {
         // get all Knots of the spline
         var spline = splineObject.GetComponent<SplineContainer>().Spline;
-        BezierKnot[] cpKnots = getRelativKnotPositionsOfCheckpoints(cps);
+        BezierKnot[] cpKnots = getRelativeKnotPositionsOfCheckpoints(cps);
 
         // set knots to spline
         spline.Knots = cpKnots;
@@ -163,23 +164,23 @@ public class routeManager : MonoBehaviour
     }
 
     /*
-     * This methods returns the realativ positions between the first and all other cps
+     * This methods returns the relative positions between the first and all other cps
      */
-    BezierKnot[] getRelativKnotPositionsOfCheckpoints(GameObject[] cps)
+    BezierKnot[] getRelativeKnotPositionsOfCheckpoints(GameObject[] cps)
     {
         BezierKnot[] relativPositions = new BezierKnot[cps.Length];
 
 
         for (int i = 0; i < cps.Length; i++)
         {
-            // get realtiv position
+            // get relative position
             relativPositions[i] = new BezierKnot(cps[i].transform.position - cps[0].transform.position);
         }
 
         return relativPositions;
     }
 
-    void setAsActiveCP(GameObject cp)
+    void setAsActiveCP(int index)
     {
         // reset material of old cp
         if(activeCP) {
@@ -187,9 +188,10 @@ public class routeManager : MonoBehaviour
         }
 
         // set new active cp
-        activeCP = cp;
+        activeCP = checkpoints[index];
+        activeCPIndex = index;
         activeCP.GetComponent<SetupCP>().setCPMaterialStatus(true);
-        flightLevelDisplay.UpdateCheckpoint(cp);
+        flightLevelDisplay.UpdateCheckpoint(activeCP);
     }
 
     void changeToNextCP(bool increment)
@@ -206,11 +208,15 @@ public class routeManager : MonoBehaviour
         }
 
         i = Math.Clamp(i, 0, checkpoints.Length - 1);
-        setAsActiveCP(checkpoints[i]);
+        setAsActiveCP(i);
     }
 
     void adjustCPHeight(int interval)
     {
+        if(activeCPIndex == 0 || activeCPIndex == inputRouteCPs.Length - 1) {
+            return;
+        }
+
         // get new Position
         double3 position = activeCP.GetComponent<CesiumGlobeAnchor>().longitudeLatitudeHeight;
         position[2] += interval;
@@ -218,6 +224,10 @@ public class routeManager : MonoBehaviour
         // set new Position
         activeCP.GetComponent<CesiumGlobeAnchor>().longitudeLatitudeHeight = position;
         flightLevelDisplay.UpdateCheckpoint(activeCP);
+
+        // update location marker
+        SetupCP cpScript = activeCP.GetComponent<SetupCP>();
+        cpScript.UpdateLocationMarker();
 
         // update spline
         updateSpline(routeSpline, checkpoints, 80);

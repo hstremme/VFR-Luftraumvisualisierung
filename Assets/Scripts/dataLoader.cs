@@ -211,7 +211,6 @@ public class dataLoader : MonoBehaviour
                         mat = Resources.Load("Materials/Stack") as Material;
                         break;
                 }
-                Debug.Log(type);
                 string[] pos = part.SelectSingleNode("aixm:VerticalStructurePart//gml:pos", nsmgr).InnerText.Split(' ');
                 double lon = double.Parse(pos[1], CultureInfo.InvariantCulture);
                 double lat = double.Parse(pos[0], CultureInfo.InvariantCulture);
