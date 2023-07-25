@@ -19,7 +19,7 @@ public class Geoid : MonoBehaviour
     {
         List<double[]> part = new List<double[]>();
         string identifier = null;
-        var lines = File.ReadLines("Assets/Data/geoid.csv").Skip(1).ToList();
+        var lines = File.ReadLines(Application.streamingAssetsPath + "/geoid.csv").Skip(1).ToList();
         string last = lines.Last();
         foreach (var line in lines)
         {

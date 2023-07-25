@@ -10,6 +10,7 @@ using UnityEngine.UIElements;
 using System.Collections;
 using System.IO;
 using System.Linq;
+using TMPro;
 
 public class dataLoader : MonoBehaviour
 {
@@ -22,7 +23,7 @@ public class dataLoader : MonoBehaviour
     public Material obstaclePrefab;
 
     public Material windmillMat;
-    
+
     private Geoid geoid;
 
     private List<GameObject> airportsList = new List<GameObject>();
@@ -118,9 +119,9 @@ public class dataLoader : MonoBehaviour
     void AddAirports()
     {
         XmlDocument airportXml = new XmlDocument();
-        airportXml.Load("Assets/Data/ED_AirportHeliport_2023-05-18_2023-05-18_snapshot.xml");
+        airportXml.Load(Application.streamingAssetsPath + "/ED_AirportHeliport_2023-05-18_2023-05-18_snapshot.xml");
         XmlDocument runwayXml = new XmlDocument();
-        runwayXml.Load("Assets/Data/ED_Runway_2023-07-13_2023-07-13_snapshot.xml");
+        runwayXml.Load(Application.streamingAssetsPath + "/ED_Runway_2023-07-13_2023-07-13_snapshot.xml");
         XmlNamespaceManager nsmgr = CreateXmlNsmng(runwayXml);
 
         XmlNodeList airportXmlList = airportXml.GetElementsByTagName("aixm:AirportHeliport");
@@ -179,7 +180,7 @@ public class dataLoader : MonoBehaviour
     void AddObstacles()
     {
         XmlDocument obstacleXml = new XmlDocument();
-        obstacleXml.Load("Assets/Data/ED_Obstacles_Area_1_2023-06-15_2023-06-15_snapshot.xml");
+        obstacleXml.Load(Application.streamingAssetsPath + "/ED_Obstacles_Area_1_2023-06-15_2023-06-15_snapshot.xml");
         XmlNodeList obstacleXmlList = obstacleXml.GetElementsByTagName("aixm:VerticalStructureTimeSlice");
         XmlNamespaceManager nsmgr = CreateXmlNsmng(obstacleXml);
 
