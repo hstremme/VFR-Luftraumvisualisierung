@@ -1054,14 +1054,20 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   inputRouteCPs:
-  - x: 10.689
-    y: 53.863
+  - x: 10.718
+    y: 53.805
     z: 0
-  - x: 9.976
-    y: 53.517
+  - x: 10.623
+    y: 53.792
     z: 1200
-  - x: 8.589
-    y: 53.55
+  - x: 10.213
+    y: 53.474
+    z: 1200
+  - x: 8.573
+    y: 53.058
+    z: 1200
+  - x: 8.507
+    y: 53.036
     z: 0
   checkpointPrefab: {fileID: 2981331434148691350, guid: e11c68c6dd35de642a819d64d2a07342,
     type: 3}
@@ -1624,7 +1630,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 1, y: 0}
   m_AnchorMax: {x: 1, y: 0}
-  m_AnchoredPosition: {x: -110, y: 110}
+  m_AnchoredPosition: {x: -110, y: 0}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &833336168

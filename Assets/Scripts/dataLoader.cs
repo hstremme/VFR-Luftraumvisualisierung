@@ -50,6 +50,7 @@ public class dataLoader : MonoBehaviour
         {
             GameObject copiedAirport = Instantiate(airport, GameObject.Find("CesiumGeoreferenceMiniMap").transform);
             copiedAirport.layer = LayerMask.NameToLayer("miniMap");
+            copiedAirport.GetComponent<CesiumGlobeAnchor>().longitudeLatitudeHeight += new double3(0, 0, 30);
             airport.GetComponent<CesiumGlobeAnchor>().scaleEastUpNorth = 80;
         }
     }
