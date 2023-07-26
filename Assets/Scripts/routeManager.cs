@@ -122,7 +122,7 @@ public class routeManager : MonoBehaviour
         miniMapCheckpoint.transform.SetParent(miniMapGeoRef.transform);
         CesiumGlobeAnchor miniMapAnchor = miniMapCheckpoint.GetComponent<CesiumGlobeAnchor>();
         miniMapAnchor.longitudeLatitudeHeight = position;
-        miniMapAnchor.transform.localScale = new Vector3(10000,100,10000);
+        miniMapAnchor.transform.localScale = new Vector3(3000,30,3000);
         miniMapCheckpoint.layer = LayerMask.NameToLayer("miniMap");
 
 
